@@ -287,73 +287,87 @@ Command conventions, placeholders and output file naming are in [🧭 phase-walk
 
 - **Related questions:** `Qxx`
 - **URL / parameter:** `curl -sk "http://meta2/mutillidae?page=zzXSS9f2a" | grep -c "zzXSS9f2a"`
-- **Type and technique:** `Method GET XSS reflected`
-- **Evidence:** `recon/<file>` (line `<n>`), or screenshot
-- **Flag / value:** `1 occurrence`
-- **Impact:** `<one line>`
+- **Type and technique:** `GET XSS reflected`
+- **Evidence:** `All chars accepted`
+- **Flag / value:** ```page=zzXSS9f2a'\"<>\`\\\${{7*7}}```
+- **Impact:** `Direct injection - 1 occurrence`
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
 - **Related questions:** `Qxx`
 - **URL / parameter:** `curl -sk -X POST -d "target_host=zzXSS9f2a&dns-lookup-php-submit-button=zzXSS9f2a" -H "application/x-www-form-urlencoded" "http://meta2/mutillidae/index.php?page=dns-lookup.php" | grep -c "zzXSS9f2a"`
-- **Type and technique:** `Method POST XSS reflected`
-- **Evidence:** `recon/<file>` (line `<n>`), or screenshot
-- **Flag / value:** `2 occurrences`
-- **Impact:** `<one line>`
+- **Type and technique:** `POST XSS reflected`
+- **Evidence:** all chars - pseudo chars
+- **Flag / value:**
+    - ```zzXSS9f2a'"<>`\${{7*7}}```
+    - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
+- **Impact:** `Direct injection - HTML attribute injection - JS string injection - URL injection - Several occurrences`
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
 - **Related questions:** `Qxx`
 - **URL / parameter:** `curl -sk -X POST -d "ToolID=zzXSS9f2a&pen-test-tool-lookup-php-submit-button=zzXSS9f2a" -H "application/x-www-form-urlencoded" "http://meta2/mutillidae/index.php?page=pen-test-tool-lookup.php" | grep -c "zzXSS9f2a"" | grep -c "zzXSS9f2a"`
-- **Type and technique:** `Method POST XSS reflected`
-- **Evidence:** `recon/<file>` (line `<n>`), or screenshot
-- **Flag / value:** `1 occurrence`
-- **Impact:** `<one line>`
+- **Type and technique:** `POST XSS reflected`
+- **Evidence:** all chars - pseudo chars
+- **Flag / value:**
+    - ```zzXSS9f2a'"<>`\${{7*7}}```
+    - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
+- **Impact:** `Direct injection - HTML attribute injection - JS string injection - URL injection - Several occurrences`
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
 - **Related questions:** `Qxx`
 - **URL / parameter:** `curl -sk -X POST -d "background_color=zzXSS9f2a&set-background-color-php-submit-button=zzXSS9f2a" -H "application/x-www-form-urlencoded" "http://meta2/mutillidae/index.php?page=set-background-color.php" | grep -c "zzXSS9f2a" | grep -c "zzXSS9f2a"`
-- **Type and technique:** `Method POST XSS reflected`
-- **Evidence:** `recon/<file>` (line `<n>`), or screenshot
-- **Flag / value:** `2 occurrence`
-- **Impact:** `<one line>`
+- **Type and technique:** `POST XSS reflected`
+- **Evidence:** all chars - pseudo chars
+- **Flag / value:**
+    - ```zzXSS9f2a'"<>`\${{7*7}}```
+    - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
+- **Impact:** `Direct injection - HTML attribute injection - JS string injection - URL injection - Several occurrences`
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
 - **Related questions:** `Qxx`
 - **URL / parameter:** `curl -sk -X POST -d "textfile=zzXSS9f2a&text-file-viewer-php-submit-button=zzXSS9f2a" -H "application/x-www-form-urlencoded" "http://meta2/mutillidae/index.php?page=text-file-viewer.php" | grep -c "zzXSS9f2a"`
-- **Type and technique:** `Method POST XSS reflected`
-- **Evidence:** `recon/<file>` (line `<n>`), or screenshot
-- **Flag / value:** `2 occurrences`
-- **Impact:** `<one line>`
+- **Type and technique:** `POST XSS reflected`
+- **Evidence:** all chars - pseudo chars
+- **Flag / value:**
+    - ```zzXSS9f2a'"<>`\${{7*7}}```
+    - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
+- **Impact:** `Direct injection - HTML attribute injection - JS string injection - URL injection - Several occurrences`
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
 - **Related questions:** `Qxx`
 - **URL / parameter:** `curl -sk -X POST -d "csrf-token=zzXSS9f2a&blog_entry=zzXSS9f2a&add-to-your-blog-php-submit-button=zzXSS9f2a" -H "application/x-www-form-urlencoded" "http://meta2/mutillidae/index.php?page=add-to-your-blog.php" | grep -c "zzXSS9f2a"`
-- **Type and technique:** `Method POST XSS reflected`
-- **Evidence:** `recon/<file>` (line `<n>`), or screenshot
-- **Flag / value:** `1 occurrence`
-- **Impact:** `<one line>`
+- **Type and technique:** `POST XSS reflected`
+- **Evidence:** all chars - pseudo chars
+- **Flag / value:**
+    - ```zzXSS9f2a'"<>`\${{7*7}}```
+    - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
+- **Impact:** `Direct injection - HTML attribute injection - JS string injection - URL injection - Several occurrences`
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
 - **Related questions:** `Qxx`
 - **URL / parameter:** `curl -sk -X POST -d "username=zzXSS9f2a&password=zzXSS9f2a&confirm_password=zzXSS9f2a&my_signature=zzXSS9f2a&register-php-submit-button=zzXSS9f2a" -H "application/x-www-form-urlencoded" "http://meta2/mutillidae/index.php?page=register.php" | grep -c "zzXSS9f2a"`
-- **Type and technique:** `Method POST XSS reflected`
-- **Evidence:** `recon/<file>` (line `<n>`), or screenshot
-- **Flag / value:** `1 occurrence`
-- **Impact:** `<one line>`
+- **Type and technique:** `POST XSS reflected`
+- **Evidence:** all chars - pseudo chars
+- **Flag / value:**
+    - ```zzXSS9f2a'"<>`\${{7*7}}```
+    - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
+- **Impact:** `Direct injection - HTML attribute injection - JS string injection - URL injection - Several occurrences`
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
 - **Related questions:** `Qxx`
 - **URL / parameter:** `curl -sk -X POST -d "username=zzXSS9f2a&password=zzXSS9f2a&login-php-submit-button=zzXSS9f2a" -H "application/x-www-form-urlencoded" "http://meta2/mutillidae/index.php?page=login.php" | grep -c "zzXSS9f2a"`
-- **Type and technique:** `Method POST XSS reflected`
-- **Evidence:** `recon/<file>` (line `<n>`), or screenshot
-- **Flag / value:** `3 occurrences`
-- **Impact:** `<one line>`
+- **Type and technique:** `POST XSS reflected`
+- **Evidence:** all chars - pseudo chars
+- **Flag / value:**
+    - ```zzXSS9f2a'"<>`\${{7*7}}```
+    - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
+- **Impact:** `Direct injection - HTML attribute injection - JS string injection - URL injection - Several occurrences`
 
 #### `<WSTG-ID>` · `<Finding title>`
 
