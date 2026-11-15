@@ -87,7 +87,7 @@
 					<td>
 						<a href="./index.php?page=login.php">Login/Register</a>		
 					</td>
-					<td><a href="./index.php?do=toggle-hints&page=notes.php">Toggle Hints</a></td>					<td><a href="./index.php?do=toggle-security&page=notes.php">Toggle Security</a></td>
+					<td><a href="./index.php?do=toggle-hints&page=user-poll.php">Toggle Hints</a></td>					<td><a href="./index.php?do=toggle-security&page=user-poll.php">Toggle Security</a></td>
 					<td><a href="set-up-database.php">Reset DB</a></td>
 					<td><a href="./index.php?page=show-log.php">View Log</a></td>
 					<td><a href="./index.php?page=captured-data.php">View Captured Data</a></td>
@@ -105,7 +105,7 @@
 						<li><a href="index.php?page=home.php">Home</a></li>
 					  	<li>
 					  		<a href="./index.php?page=login.php">Login/Register</a>						</li>
-						<li><a href="./index.php?do=toggle-security&page=notes.php">Toggle Security</a></li>
+						<li><a href="./index.php?do=toggle-security&page=user-poll.php">Toggle Security</a></li>
 						<li><a href="set-up-database.php">Setup/Reset the DB</a></li>
 						<li><a href="./index.php?page=show-log.php">Show Log</a></li>
 						<li><a href="./index.php?page=credits.php">Credits</a></li>
@@ -486,7 +486,9 @@
 <td valign="top">
 	<blockquote>
 	<!-- Begin Content -->
-<div class="page-title">Usage Instructions</div>
+
+
+<div class="page-title">User Poll</div>
 
 
 <div style="margin: 5px;">
@@ -504,25 +506,73 @@
 	</a>
 	</span>
 </div>
-<ul>
-	<li>Created by <a href="http://Irongeek.com">Irongeek.com</a>.</li>
-	<li>If you would like to learn about other deliberately vulnerable web 
-		applications, check out <a href="http://www.irongeek.com/i.php?page=security/deliberately-insecure-web-applications-for-learning-web-app-security">
-		Deliberately Insecure Web Applications For Learning Web App Security</a>. 
-	</li>
-	<li>If you would like to help in writing the hints sections, please
-		<a href="http://www.irongeek.com/i.php?page=contact">email</a>. Your name 
-		and a link to your site will be added to the credits page.
-	</li>
-	<li><u><font color="#FF0000">Do NOT&nbsp; run this code on a production network</font></u>. Either run it on a 
-	private network, or restrict your web server software to only use the local 
-	loopback address. By default Mutillidae only allows access from localhost 
-	(127.*.*.*). Edit the .htaccess file to change this behavior (not recommended on a public network). 
-	If for some reason .htaccess is not parsed you can 
-	restrict the IP by finding the &quot;Listen&quot; line in the http.conf file and changing 
-	it to read: <font color="#008080">Listen 127.0.0.1:80</font>
-	</li>
-</ul>
+<fieldset>
+	<legend>User Poll</legend>
+	<form 	action="index.php" 
+			method="GET"
+			enctype="application/x-www-form-urlencoded" 
+			id="idPollForm">
+		<input type="hidden" name="page" value="user-poll.php" />
+		<table style="margin-left:auto; margin-right:auto;">
+			<tr id="id-bad-vote-tr" style="display: none;">
+				<td class="error-message">
+					Validation Error: HTTP Parameter Pollution Detected. Vote cannot be trusted.
+				</td>
+			</tr>
+			<tr><td></td></tr>
+			<tr>
+				<td id="id-poll-form-header-td" class="form-header">Choose Your Favorite Security Tool</td>
+			</tr>
+			<tr><td></td></tr>
+			<tr><th class="label">Initial your choice to make your vote count</th></tr>
+			<tr><td></td></tr>
+			<tr>
+				<td>
+					<input name="choice" id="id_choice" type="radio" value="nmap" checked="checked" />&nbsp;&nbsp;nmap<br />
+					<input name="choice" id="id_choice" type="radio" value="wireshark" />&nbsp;&nbsp;wireshark<br />
+					<input name="choice" id="id_choice" type="radio" value="tcpdump" />&nbsp;&nbsp;tcpdump<br />
+					<input name="choice" id="id_choice" type="radio" value="netcat" />&nbsp;&nbsp;netcat<br />
+					<input name="choice" id="id_choice" type="radio" value="metasploit" />&nbsp;&nbsp;metasploit<br />
+					<input name="choice" id="id_choice" type="radio" value="kismet" />&nbsp;&nbsp;kismet<br />
+					<input name="choice" id="id_choice" type="radio" value="Cain" />&nbsp;&nbsp;Cain<br />
+					<input name="choice" id="id_choice" type="radio" value="Ettercap" />&nbsp;&nbsp;Ettercap<br />
+					<input name="choice" id="id_choice" type="radio" value="Paros" />&nbsp;&nbsp;Paros<br />
+					<input name="choice" id="id_choice" type="radio" value="Burp Suite" />&nbsp;&nbsp;Burp Suite<br />
+					<input name="choice" id="id_choice" type="radio" value="Sysinternals" />&nbsp;&nbsp;Sysinternals<br />
+					<input name="choice" id="id_choice" type="radio" value="inSIDDer" />&nbsp;&nbsp;inSIDDer
+				</td>
+			</tr>
+			<tr>
+				<td class="label">
+					Your Initials:<input type="text" name="initials" />
+				</td>
+			</tr>
+			<tr><td></td></tr>
+			<tr>
+				<td style="text-align:center;">
+					<input name="user-poll-php-submit-button" class="button" type="submit" value="Submit Vote" />
+				</td>
+			</tr>
+			<tr><td></td></tr>
+			<tr><td></td></tr>
+			<tr>
+				<td class="report-header">
+				No choice selected				</td>
+			</tr>
+		</table>
+	</form>
+</fieldset>
+
+
+
+
+<script type="text/javascript">
+	try{
+		document.getElementById("id_choice").focus();
+	}catch(e){
+		alert('Error trying to set focus on field choice: ' + e.message);
+	}// end try
+</script>
 			<!-- End Content -->
 		</blockquote>
 			</td>
