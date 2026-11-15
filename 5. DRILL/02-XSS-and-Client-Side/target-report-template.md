@@ -461,7 +461,7 @@ Command conventions, placeholders and output file naming are in [🧭 phase-walk
 - When discovering DOM XSS, instead of doing it with curl and for / while loops, gathering manually all js urls, saved them into a txt file and grep each line
 - Very important: work in the identification phase and find out the best way to perform it. Right now there are operations taking too much time only for this phase.
 - Headers and cookies. It's enough with the ones in the guide? Should be performed page by page?
-- Sweep whole application vs based on questions. Analyze this. The idea would be following a methodology but not trapping yourself into a rabbit hole. **Review identification**
+- Sweep whole application vs based on questions. Analyze this. The idea would be following a methodology but not trapping yourself into a rabgitbit hole. **Review identification**
 - I'll say it again: XSS identification phase! We need to accelerate that. Study how can you leverage in BS in order to speed things up.
 
 ***
