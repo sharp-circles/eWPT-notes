@@ -66,6 +66,7 @@ Current state:
 | `00-Exam-Setup-and-Proxies` | Startup checklist |
 | `01 - Info-Gathering-and-Recon` | Full structure, drilled |
 | `02 - XSS-and-Client-Side` | Cheatsheet, walkthrough and labs in progress |
+| `03-SQL-Injection` | Walkthrough, cheatsheet, notes and FAQ generated; not yet drilled |
 | Remaining phases | Pending: same structure will be replicated |
 
 ### 5. DRILL
