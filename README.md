@@ -57,7 +57,7 @@ Each phase folder follows the same shape:
 | `📜 cheatsheet.md` | Extended command database, used when the main commands do not apply or fail |
 | `📝 notes.md` | Condensed INE notes for the phase |
 | `🧪 LABS/` | Practical labs summarized in markdown |
-| `faq.md` | Doubts and improvements for the phase |
+| `❓ faq.md` | Doubts and improvements for the phase |
 
 Current state:
 
