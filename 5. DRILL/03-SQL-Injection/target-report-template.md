@@ -464,6 +464,10 @@ Command conventions, placeholders and output file naming are in [🧭 phase-walk
 - Sweep whole application vs based on questions. Analyze this. The idea would be following a methodology but not trapping yourself into a rabgitbit hole. **Review identification**
 - I'll say it again: XSS identification phase! We need to accelerate that. Study how can you leverage in BS in order to speed things up.
 - In SQLi, when identifying source parameters, regular ones, such as GET/POST parameters, text fields, search boxes or form values, are clear. But what happens with cookies and headers? Should we exploit the ones already appear in the requests caught by BurpSuite or, rather, adding more on our own?
+- Improvements at SQLi (all engines)
+    - Include builtin operations
+    - Include common table names and its column names
+    - Include common parsing operations
 
 ***
 
